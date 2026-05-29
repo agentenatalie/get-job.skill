@@ -65,6 +65,10 @@
 
 ## 怎么用
 
+<div align="center">
+<img src="assets/how-to-use.png" alt="怎么用：一句话丢简历 + 岗位 → 调研岗位 → 改简历 → 准备面试，全程自动产出文件" width="100%" />
+</div>
+
 装好 skill 后，把简历和目标岗位**直接 copy-paste 丢给它**，一句话就行：
 
 > 这是我的简历 `[贴上简历内容 / 拖入 PDF/Word]`，我想申请 `[公司]` 的 `[岗位]`，JD 如下 `[贴上 JD]`，帮我准备。
@@ -112,7 +116,7 @@ get-job/
 │   ├── generate_resume.py        # 把改好的内容渲染成统一模板 docx
 │   ├── sample_resume.json        # 输入示例
 │   └── README.md                 # 脚本用法
-├── assets/                       # README 用的图（hero / 工作流程 / 前后简历 / 面试准备截图）
+├── assets/                       # README 用的图（hero / 怎么用 / 前后简历 / 面试准备截图）
 └── examples/                     # 完整成品（虚构）
     ├── 文科投AICoding/           # 含改前/改后简历截图 + 面试准备文件
     ├── 文科生投运营/
@@ -122,10 +126,6 @@ get-job/
 ---
 
 ## 工作原理
-
-<div align="center">
-<img src="assets/workflow.png" alt="实习.skill 工作流程：简历润色 → 证据化审计 → 岗位研究 → 面试准备" width="100%" />
-</div>
 
 ### 核心信念：翻译，不是造假
 
