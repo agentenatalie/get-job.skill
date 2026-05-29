@@ -136,14 +136,14 @@ get-job/
 **方式一：一行命令（推荐）**
 
 ```bash
-npx skills add agentenatalie/get-job
+npx skills add agentenatalie/get-job.skill
 ```
 
 **方式二：手动安装**——把整个 `get-job/` 目录放进你的 skills 目录：
 
 ```bash
 # Claude Code
-git clone https://github.com/agentenatalie/get-job ~/.claude/skills/get-job
+git clone https://github.com/agentenatalie/get-job.skill ~/.claude/skills/get-job
 # Codex / 其他 runtime：放进对应的 skills 目录即可
 ```
 
