@@ -40,8 +40,8 @@
 
 <table>
 <tr>
-<td width="50%" align="center"><b>❌ 改之前</b><br/><sub>语言不对（helped/worked/assisted 堆动作）、格式不对（无定位、无排版）、内容不对（看不出和岗位的关系）——什么都不对</sub></td>
-<td width="50%" align="center"><b>✅ 改之后</b><br/><sub>定位头 + 痛点→产品决策→可演示 Demo + 统一专业排版，每一项都对齐目标岗位</sub></td>
+<td width="50%" align="center"><b>❌ 改之前</b><br/><sub>语言堆动作、格式无定位、内容看不出和岗位的关系</sub></td>
+<td width="50%" align="center"><b>✅ 改之后</b><br/><sub>定位头 + 痛点→产品决策→可演示 Demo + 统一专业排版</sub></td>
 </tr>
 <tr>
 <td><img src="assets/resume-before.png" alt="改之前的简历" /></td>
