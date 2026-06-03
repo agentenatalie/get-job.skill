@@ -180,4 +180,22 @@ git clone https://github.com/agentenatalie/get-job.skill ~/.claude/skills/get-jo
 
 ---
 
+## Star History
+
+<div align="center">
+
+<a href="https://star-history.com/#agentenatalie/get-job.skill&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=agentenatalie/get-job.skill&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=agentenatalie/get-job.skill&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=agentenatalie/get-job.skill&type=Date" width="80%" />
+  </picture>
+</a>
+
+**觉得有用就点个 ⭐ Star，让更多在改简历、准备面试的人看到。**
+
+</div>
+
+---
+
 创建者：[agentenatalie](https://github.com/agentenatalie)
