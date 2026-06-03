@@ -195,7 +195,3 @@ git clone https://github.com/agentenatalie/get-job.skill ~/.claude/skills/get-jo
 **觉得有用就点个 ⭐ Star，让更多在改简历、准备面试的人看到。**
 
 </div>
-
----
-
-创建者：[agentenatalie](https://github.com/agentenatalie)
