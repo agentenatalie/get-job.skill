@@ -3,10 +3,10 @@
 generate_resume.py — 把结构化简历内容渲染成统一专业模板的 docx。
 
 复刻「实习.skill」案例使用的简历模板视觉规格：
-- 字体 Arial（中英文统一），窄页边距（适合一页装下）
+- 字体 Aptos + 微软雅黑（现代无衬线），窄页边距（适合一页装下）
 - 姓名大字号居中 + 联系方式行
 - "求职意向"定位头段落
-- section 标题带底部分隔线（如「教育背景」「核心经历」）
+- section 标题带品牌色底部分隔线（如「教育背景」「核心经历」）
 - 经历条目：标题加粗 + 时间右对齐，下挂 bullet
 
 输入：一个 JSON 文件（结构见 resume_schema 注释 / scripts/sample_resume.json）
@@ -15,37 +15,52 @@ generate_resume.py — 把结构化简历内容渲染成统一专业模板的 do
 用法：
     python3 generate_resume.py <input.json> [-o output.docx]
 """
-import sys
 import json
 import argparse
+import re
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
-FONT = "Arial"
+LATIN_FONT = "Aptos"
+EAST_ASIA_FONT = "Microsoft YaHei"
 NAME_SIZE = 18      # 姓名
 SECTION_SIZE = 12   # section 标题
 BODY_SIZE = 10      # 正文
 RIGHT_TAB_CM = 17.0  # 时间右对齐 tab 位置（按窄边距 A4 正文宽度）
+TEXT_COLOR = (34, 34, 34)
+MUTED_COLOR = (90, 90, 90)
+ACCENT_COLOR = (26, 83, 92)
+ACCENT_HEX = "1A535C"
+TRANSFER_LABEL_RE = re.compile(r"^\s*(?:[-•]\s*)?(?:迁移句|迁移说明|可迁移性)\s*[:：]\s*")
 
 
-def set_font(run, size=BODY_SIZE, bold=False, color=None):
-    run.font.name = FONT
+def set_font(run, size=BODY_SIZE, bold=False, color=None, italic=False):
+    run.font.name = LATIN_FONT
     run.font.size = Pt(size)
     run.font.bold = bold
+    run.font.italic = italic
     if color:
         run.font.color.rgb = RGBColor(*color)
-    # 中文字体也设为 Arial（eastAsia）
+    else:
+        run.font.color.rgb = RGBColor(*TEXT_COLOR)
+    # 中文字体单独指定，避免中文被西文字体硬套。
     rpr = run._element.get_or_add_rPr()
     rfonts = rpr.find(qn('w:rFonts'))
     if rfonts is None:
         rfonts = OxmlElement('w:rFonts')
         rpr.append(rfonts)
-    rfonts.set(qn('w:eastAsia'), FONT)
-    rfonts.set(qn('w:ascii'), FONT)
-    rfonts.set(qn('w:hAnsi'), FONT)
+    rfonts.set(qn('w:eastAsia'), EAST_ASIA_FONT)
+    rfonts.set(qn('w:ascii'), LATIN_FONT)
+    rfonts.set(qn('w:hAnsi'), LATIN_FONT)
+
+
+def clean_bullet_text(text):
+    """清理上游 prompt 泄漏出的标签词，避免简历里出现「迁移句:」。"""
+    text = str(text or "").strip()
+    return TRANSFER_LABEL_RE.sub("", text)
 
 
 def add_bottom_border(paragraph):
@@ -56,7 +71,7 @@ def add_bottom_border(paragraph):
     bottom.set(qn('w:val'), 'single')
     bottom.set(qn('w:sz'), '6')
     bottom.set(qn('w:space'), '2')
-    bottom.set(qn('w:color'), '000000')
+    bottom.set(qn('w:color'), ACCENT_HEX)
     p_bdr.append(bottom)
     p_pr.append(p_bdr)
 
@@ -72,14 +87,14 @@ def add_name(doc, name):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     tight(p, 0, 2)
-    set_font(p.add_run(name), NAME_SIZE, bold=True)
+    set_font(p.add_run(name), NAME_SIZE, bold=True, color=ACCENT_COLOR)
 
 
 def add_contact(doc, contact):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     tight(p, 0, 6)
-    set_font(p.add_run(contact), BODY_SIZE)
+    set_font(p.add_run(contact), BODY_SIZE, color=MUTED_COLOR)
 
 
 def add_objective(doc, objective):
@@ -87,14 +102,14 @@ def add_objective(doc, objective):
     p = doc.add_paragraph()
     tight(p, 2, 6)
     r = p.add_run("求职意向：")
-    set_font(r, BODY_SIZE, bold=True)
+    set_font(r, BODY_SIZE, bold=True, color=ACCENT_COLOR)
     set_font(p.add_run(objective), BODY_SIZE)
 
 
 def add_section(doc, title):
     p = doc.add_paragraph()
     tight(p, 8, 3)
-    set_font(p.add_run(title), SECTION_SIZE, bold=True)
+    set_font(p.add_run(title), SECTION_SIZE, bold=True, color=ACCENT_COLOR)
     add_bottom_border(p)
 
 
@@ -108,16 +123,19 @@ def add_entry(doc, title, meta=None, subtitle=None, bullets=None):
         tab_stops = pf.tab_stops
         tab_stops.add_tab_stop(Cm(RIGHT_TAB_CM), WD_TAB_ALIGNMENT.RIGHT)
         set_font(p.add_run(title), BODY_SIZE, bold=True)
-        set_font(p.add_run("\t" + meta), BODY_SIZE)
+        set_font(p.add_run("\t" + meta), BODY_SIZE, color=MUTED_COLOR)
     else:
         set_font(p.add_run(title), BODY_SIZE, bold=True)
 
     if subtitle:
         sp = doc.add_paragraph()
         tight(sp, 0, 1)
-        set_font(sp.add_run(subtitle), BODY_SIZE)
+        set_font(sp.add_run(subtitle), BODY_SIZE, color=MUTED_COLOR, italic=True)
 
     for b in (bullets or []):
+        b = clean_bullet_text(b)
+        if not b:
+            continue
         bp = doc.add_paragraph(style=None)
         tight(bp, 0, 1)
         bp.paragraph_format.left_indent = Cm(0.5)
@@ -146,7 +164,7 @@ def build(data, out_path):
         s.right_margin = Cm(1.9)
     # 默认样式字体
     normal = doc.styles['Normal']
-    normal.font.name = FONT
+    normal.font.name = LATIN_FONT
     normal.font.size = Pt(BODY_SIZE)
 
     add_name(doc, data["name"])

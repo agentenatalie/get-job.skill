@@ -23,13 +23,13 @@ python3 generate_resume.py my_resume.json -o 张三_某公司_产品实习.docx
 
 ### 模板视觉规格（已固定在脚本里）
 
-- 字体：Arial（中英文统一）
+- 字体：Aptos + 微软雅黑（现代无衬线，兼顾中英文）
 - 页边距：窄边距（A4，适合一页装下）
-- 姓名：18pt 居中加粗
-- 联系方式：一行居中
+- 姓名：18pt 居中加粗，使用克制品牌色
+- 联系方式：一行居中，弱化为灰色
 - 求职意向：顶部定位头段落（`objective` 字段）
-- section 标题：12pt 加粗 + 底部分隔线
-- 经历条目：标题加粗 + 时间右对齐 tab，下挂 `•` bullet
+- section 标题：12pt 加粗 + 品牌色底部分隔线
+- 经历条目：标题加粗 + 时间右对齐 tab，下挂 `•` bullet；副标题弱化为灰色斜体
 - 技能区：「类别：内容」加粗类别名
 
 ### 输入 JSON 结构
@@ -68,7 +68,8 @@ python3 generate_resume.py my_resume.json -o 张三_某公司_产品实习.docx
 字段说明：
 - `entries[].title` 必填；`meta`（右对齐时间/地点）、`subtitle`（职位/方向）、`bullets` 可选
 - section 加 `"type": "skills"` 时用 `items`（`{category, content}` 或纯字符串列表），否则用 `entries`
-- 经历建议带迁移句（见改简历框架），脚本不强制
+- 经历可少量、自然地加入迁移叙事（见改简历框架），脚本不强制
+- 脚本会自动移除 bullet 开头误泄漏的 `迁移句:`、`迁移说明:`、`可迁移性:` 标签，避免标签词直接出现在正式简历里
 
 ### 转 PDF（可选）
 
