@@ -66,10 +66,20 @@ python3 generate_resume.py my_resume.json -o 张三_某公司_产品实习.docx
 ```
 
 字段说明：
-- `entries[].title` 必填；`meta`（右对齐时间/地点）、`subtitle`（职位/方向）、`bullets` 可选
+- `entries[].title` 建议填写；缺失时脚本会用占位标题并输出 warning；`meta`（右对齐时间/地点）、`subtitle`（职位/方向）、`bullets` 可选
 - section 加 `"type": "skills"` 时用 `items`（`{category, content}` 或纯字符串列表），否则用 `entries`
 - 经历可少量、自然地加入迁移叙事（见改简历框架），脚本不强制
 - 脚本会自动移除 bullet 开头误泄漏的 `迁移句:`、`迁移说明:`、`可迁移性:` 标签，避免标签词直接出现在正式简历里
+
+### 容错行为
+
+脚本会尽量生成可检查的 docx，而不是遇到小缺口直接崩掉：
+- 缺 `name` / `contact`：使用占位文本，并在 stderr 输出 warning
+- 缺 `sections` 或结构错误：生成"信息待补"占位区
+- section / entry / skill item 结构不合法：跳过该项并输出 warning
+- bullet 不是数组：自动当作单条 bullet 处理
+
+这些容错只保证排版工具不中断，不代表内容已完整；正式投递前仍要按 skill 的可靠性协议补齐缺口。
 
 ### 转 PDF（可选）
 

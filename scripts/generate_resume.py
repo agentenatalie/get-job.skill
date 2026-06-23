@@ -18,6 +18,7 @@ generate_resume.py — 把结构化简历内容渲染成统一专业模板的 do
 import json
 import argparse
 import re
+import sys
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
@@ -35,6 +36,23 @@ MUTED_COLOR = (90, 90, 90)
 ACCENT_COLOR = (26, 83, 92)
 ACCENT_HEX = "1A535C"
 TRANSFER_LABEL_RE = re.compile(r"^\s*(?:[-•]\s*)?(?:迁移句|迁移说明|可迁移性)\s*[:：]\s*")
+
+
+def warn(message):
+    print(f"⚠️ {message}", file=sys.stderr)
+
+
+def text_or_default(value, default):
+    value = str(value).strip() if value is not None else ""
+    return value or default
+
+
+def as_list(value):
+    if isinstance(value, list):
+        return value
+    if value in (None, ""):
+        return []
+    return [value]
 
 
 def set_font(run, size=BODY_SIZE, bold=False, color=None, italic=False):
@@ -61,6 +79,109 @@ def clean_bullet_text(text):
     """清理上游 prompt 泄漏出的标签词，避免简历里出现「迁移句:」。"""
     text = str(text or "").strip()
     return TRANSFER_LABEL_RE.sub("", text)
+
+
+def normalize_resume_data(data):
+    """把不完整 JSON 降级成可渲染结构，并把问题输出为 warning。"""
+    if not isinstance(data, dict):
+        raise ValueError("输入 JSON 顶层必须是 object。")
+
+    normalized = {
+        "name": text_or_default(data.get("name"), "姓名待补"),
+        "contact": text_or_default(data.get("contact"), "联系方式待补"),
+        "objective": text_or_default(data.get("objective"), ""),
+        "sections": [],
+    }
+    if normalized["name"] == "姓名待补":
+        warn("缺少 name，已使用占位文本。")
+    if normalized["contact"] == "联系方式待补":
+        warn("缺少 contact，已使用占位文本。")
+
+    raw_sections = data.get("sections")
+    if not isinstance(raw_sections, list):
+        warn("缺少 sections 或 sections 不是数组，已生成“信息待补”占位区。")
+        raw_sections = [
+            {
+                "title": "信息待补",
+                "entries": [
+                    {
+                        "title": "请补充教育背景、核心经历、技能等内容",
+                        "bullets": ["当前 JSON 缺少可渲染的 sections。"],
+                    }
+                ],
+            }
+        ]
+
+    for section_index, section in enumerate(raw_sections, start=1):
+        if not isinstance(section, dict):
+            warn(f"第 {section_index} 个 section 不是 object，已跳过。")
+            continue
+
+        section_type = section.get("type")
+        normalized_section = {
+            "title": text_or_default(section.get("title"), f"未命名模块 {section_index}"),
+        }
+
+        if section_type == "skills":
+            items = []
+            for item_index, item in enumerate(as_list(section.get("items")), start=1):
+                if isinstance(item, dict):
+                    category = text_or_default(item.get("category"), f"技能类别 {item_index}")
+                    content = text_or_default(item.get("content"), "")
+                    if not content:
+                        warn(f"技能区第 {item_index} 项缺少 content，已跳过。")
+                        continue
+                    items.append({"category": category, "content": content})
+                else:
+                    content = text_or_default(item, "")
+                    if content:
+                        items.append(content)
+            if not items:
+                warn(f"技能 section「{normalized_section['title']}」没有可渲染 items，已跳过。")
+                continue
+            normalized_section["type"] = "skills"
+            normalized_section["items"] = items
+        else:
+            entries = []
+            for entry_index, entry in enumerate(as_list(section.get("entries")), start=1):
+                if not isinstance(entry, dict):
+                    warn(f"section「{normalized_section['title']}」第 {entry_index} 条 entry 不是 object，已跳过。")
+                    continue
+                title = text_or_default(entry.get("title"), f"经历待补 {entry_index}")
+                bullets = [clean_bullet_text(b) for b in as_list(entry.get("bullets"))]
+                bullets = [b for b in bullets if b]
+                entries.append(
+                    {
+                        "title": title,
+                        "meta": text_or_default(entry.get("meta"), ""),
+                        "subtitle": text_or_default(entry.get("subtitle"), ""),
+                        "bullets": bullets,
+                    }
+                )
+                if title.startswith("经历待补"):
+                    warn(f"section「{normalized_section['title']}」第 {entry_index} 条缺少 title，已使用占位标题。")
+            if not entries:
+                warn(f"section「{normalized_section['title']}」没有可渲染 entries，已跳过。")
+                continue
+            normalized_section["entries"] = entries
+
+        normalized["sections"].append(normalized_section)
+
+    if not normalized["sections"]:
+        warn("没有可渲染 section，已生成“信息待补”占位区。")
+        normalized["sections"] = [
+            {
+                "title": "信息待补",
+                "entries": [
+                    {
+                        "title": "请补充教育背景、核心经历、技能等内容",
+                        "bullets": ["当前 JSON 没有可渲染内容。"],
+                    }
+                ],
+            }
+        ]
+
+    return normalized
 
 
 def add_bottom_border(paragraph):
@@ -155,6 +276,7 @@ def add_skills(doc, skills):
 
 
 def build(data, out_path):
+    data = normalize_resume_data(data)
     doc = Document()
     # 窄页边距
     for s in doc.sections:
