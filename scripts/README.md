@@ -2,7 +2,7 @@
 
 ## generate_resume.py
 
-把结构化的简历内容（JSON）渲染成统一专业模板的 docx。这是 Phase 2「简历重写」定稿后的出件工具——内容由 skill 按 `references/resume-rewrite-framework.md` 改好，脚本只负责排版。
+把结构化的简历内容（JSON）渲染成统一专业模板的 docx。这是 Stage 2「简历重写」定稿后的出件工具——内容由 skill 按 `references/resume-playbook.md` 改好，脚本只负责排版。
 
 ### 依赖
 
@@ -40,7 +40,7 @@ python3 generate_resume.py my_resume.json -o 张三_某公司_产品实习.docx
 {
   "name": "姓名",
   "contact": "电话 | 邮箱 | 城市",
-  "objective": "求职意向定位头（见 resume-rewrite-framework.md 的 Step 3）",
+  "objective": "求职意向定位头（见 resume-playbook.md 的 Step 3）",
   "sections": [
     {
       "title": "教育背景",
@@ -80,6 +80,32 @@ python3 generate_resume.py my_resume.json -o 张三_某公司_产品实习.docx
 - bullet 不是数组：自动当作单条 bullet 处理
 
 这些容错只保证排版工具不中断，不代表内容已完整；正式投递前仍要按 skill 的可靠性协议补齐缺口。
+
+## quality_check.py
+
+扫描公开交付物的结构和红线词，用于交付前机器校验。它不能替代 `references/quality-gates.md` 的语义判断，但能规模化抓住最容易漏出的硬问题。
+
+### 用法
+
+```bash
+python3 quality_check.py <output-folder> [more-folders...]
+```
+
+例：
+
+```bash
+python3 quality_check.py ../examples/文科投AICoding ../examples/文科生投运营 ../examples/非科班投AI产品
+```
+
+脚本会检查：
+- Markdown 里是否泄漏 `迁移句:`、`旧版`、`保留作参考`、`半成品` 等红线词
+- `面试准备/` 是否包含 `00-总览.md`、`01-简历bullet逐条深挖.md`、`02-表达状态与自我介绍.md`、`99-面后复盘题库.md`
+- 轮次文件是否从 `03-` 开始，避免和固定通用文件抢编号
+- 核心文件是否含有必要结构标记，如轮次地图、风险地图、关键字卡、项目逐字稿、复盘题库
+
+返回码：
+- `0`：硬校验通过
+- `1`：发现必须修复的结构或红线问题
 
 ### 转 PDF（可选）
 
