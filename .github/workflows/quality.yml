@@ -1,0 +1,56 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate skill frontmatter
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          text = Path("SKILL.md").read_text(encoding="utf-8")
+          if not text.startswith("---\n"):
+              raise SystemExit("SKILL.md must start with YAML frontmatter")
+          try:
+              frontmatter = text.split("---\n", 2)[1]
+          except IndexError:
+              raise SystemExit("SKILL.md frontmatter is not closed")
+
+          required = {"name:", "description:"}
+          missing = [field for field in required if field not in frontmatter]
+          if missing:
+              raise SystemExit(f"SKILL.md missing frontmatter fields: {', '.join(missing)}")
+
+          if "metadata:" in frontmatter:
+              raise SystemExit("SKILL.md frontmatter should only include name and description")
+          PY
+
+      - name: Compile scripts
+        run: |
+          python3 -m py_compile scripts/generate_resume.py scripts/quality_check.py
+
+      - name: Run artifact quality checks
+        run: |
+          python3 scripts/quality_check.py \
+            examples/文科投AICoding \
+            examples/文科生投运营 \
+            examples/非科班投AI产品
+
+      - name: Check for whitespace errors
+        run: |
+          git diff --check HEAD
