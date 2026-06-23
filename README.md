@@ -7,6 +7,7 @@
 <h3>双非也能拿大厂 offer —— 从改简历到面试，把你的真实背景，翻译成面试官想要的语言。</h3>
 
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](LICENSE)
+[![Quality](https://github.com/agentenatalie/get-job.skill/actions/workflows/quality.yml/badge.svg)](https://github.com/agentenatalie/get-job.skill/actions/workflows/quality.yml)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Standard-green)](https://agentskills.io)
 [![Multi-Runtime](https://img.shields.io/badge/Runtime-Claude%20Code%20·%20Codex%20·%20Cursor%20·%20OpenClaw-blueviolet)](#安装)
 
